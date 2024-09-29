@@ -1,6 +1,37 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
+      Joseph's Simple Map
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Joseph's Map</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+ 
+  <!-- Dropdown untuk memilih basemap -->
+<ion-item>
+  <ion-label>Basemap</ion-label>
+  <ion-select [(ngModel)]="selectedBasemap" (ionChange)="changeBasemap()">
+    <ion-select-option *ngFor="let basemap of basemaps" [value]="basemap.value">
+      {{ basemap.label }}
+    </ion-select-option>
+  </ion-select>
+</ion-item>
+
+  <!-- Container untuk peta -->
+  <div id="container"></div>
+</ion-content>
+
+
+<!-- <ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
       Joseph Simple Map
     </ion-title>
   </ion-toolbar>
@@ -15,7 +46,7 @@
 
   <div id="container"></div>
 
-  <!-- Dropdown to change basemap -->
+
   <ion-item>
     <ion-label>Choose Basemap</ion-label>
     <ion-select (ionChange)="onBasemapChange($event)">
@@ -27,4 +58,4 @@
       <ion-select-option value="terrain">Terrain</ion-select-option>
     </ion-select>
   </ion-item>
-</ion-content>
+</ion-content> -->
