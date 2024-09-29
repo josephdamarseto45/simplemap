@@ -20,37 +20,37 @@ export class HomePage implements OnInit {
   constructor() {}
 
   async ngOnInit() {
-    // Buat instance peta dengan basemap default
+    //  instance peta dengan basemap
     this.map = new Map({
-      basemap: "topo-vector", // Default basemap
+      basemap: "topo-vector",
     });
 
     this.mapView = new MapView({
-      container: "container", // ID elemen HTML untuk map
+      container: "container",
       map: this.map,
       zoom: 8,
     });
 
-    // Tambahkan imagery layer cuaca (optional)
+
     let weatherServiceFL = new ImageryLayer({ url: WeatherServiceURL });
     this.map.add(weatherServiceFL);
 
-    // Update lokasi pengguna
+
     await this.updateUserLocationOnMap();
     this.mapView.center = this.userLocationGraphic.geometry as Point;
 
-    // Perbarui lokasi setiap 10 detik
+
     setInterval(this.updateUserLocationOnMap.bind(this), 10000);
 
-    // Event listener untuk klik kanan di peta
+
     this.mapView.on("click", (event: any) => {
-      if (event.button === 2) { // Klik kanan
+      if (event.button === 2) {
         this.showCoordinatesOnRightClick(event.mapPoint);
       }
     });
   }
 
-  // Fungsi untuk menangani perubahan basemap dari dropdown
+
   onBasemapChange(event: any) {
     const selectedBasemap = event.target.value;
     this.map.basemap = selectedBasemap;
@@ -66,7 +66,7 @@ export class HomePage implements OnInit {
 
   async updateUserLocationOnMap() {
     let geom = new Point({
-      longitude: -78.24908214885481, // Set koordinat manual
+      longitude: -78.24908214885481,
       latitude: 40.39682132573387,
     });
 
@@ -81,7 +81,7 @@ export class HomePage implements OnInit {
     }
   }
 
-  // Fungsi untuk menampilkan koordinat pada klik kanan
+  
   showCoordinatesOnRightClick(mapPoint: Point) {
     const latitude = mapPoint.latitude;
     const longitude = mapPoint.longitude;
