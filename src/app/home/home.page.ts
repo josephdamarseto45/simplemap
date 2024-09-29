@@ -1,97 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import Map from '@arcgis/core/Map';
-import MapView from '@arcgis/core/views/MapView';
 import { Geolocation } from '@capacitor/geolocation';
-
+import { SimpleMarkerSymbol } from '@arcgis/core/symbols';
+import Map from '@arcgis/core/Map';
 import Graphic from '@arcgis/core/Graphic';
+import MapView from '@arcgis/core/views/MapView';
 import Point from '@arcgis/core/geometry/Point';
-import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
-
-
-// @Component({
-//   selector: 'app-home',
-//   templateUrl: 'home.page.html',
-//   styleUrls: ['home.page.scss'],
-// })
-// export class HomePage implements OnInit {
-
-//   constructor() {}
-//     ngOnInit(): void {
-//      // Buat instance peta
-//     const map = new Map({
-//       basemap: "topo-vector"
-
-//     });
-
-//     const view = new MapView({
-//       container: "container",
-//       map: map,
-//       zoom: 15,
-//       center: [110.37813789693342, -7.769566294959326]
-//   });
-//   }
-// }
-
-
-
-// @Component({
-//   selector: 'app-home',
-//   templateUrl: 'home.page.html',
-//   styleUrls: ['home.page.scss'],
-// })
-// export class HomePage implements OnInit {
-//   latitude: number;
-//   longitude: number;
-
-//   constructor() {
-//     this.longitude = 110.37821899670182,
-//     this.latitude  = -7.769276117847083;
-//   }
-
-//   public async ngOnInit() {
-//     // Buat instance peta
-//     const map = new Map({
-//       basemap: "topo-vector"
-//     });
-
-//     const view = new MapView({
-//       container: "container",
-//       map: map,
-//       zoom: 15,
-//       center: [this.longitude, this.latitude]
-//     });
-
-//     // Buat marker di lokasi sv
-//     const point = new Point({
-//       longitude: this.longitude,
-//       latitude: this.latitude
-//     });
-
-//     const markerSymbol = new SimpleMarkerSymbol({
-//       style: 'diamond',
-//       color: [226, 119, 40],  // Warna marker
-//       outline: {
-//         color: [255, 255, 255], // Warna outline
-//         width: 2
-//       }
-//     });
-
-//     const pointGraphic = new Graphic({
-//       geometry: point,
-//       symbol: markerSymbol
-//     });
-
-//     // Tambahkan marker ke view
-//     view.graphics.add(pointGraphic);
-
-//     // Dapatkan posisi saat ini (opsional)
-//     const position = await Geolocation.getCurrentPosition();
-//     this.latitude = position.coords.latitude;
-//     this.longitude = position.coords.longitude;
-//   }
-// }
-
-
+import ImageryLayer from '@arcgis/core/layers/ImageryLayer';
 
 @Component({
   selector: 'app-home',
@@ -99,55 +13,80 @@ import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit {
-  latitude: number;
-  longitude: number;
+  mapView: MapView | any;
+  userLocationGraphic: Graphic | any;
+  map: Map | any;
 
-  constructor() {
-    this.longitude =  110.37821899670182,
-    this.latitude = -7.769276117847083;
-  }
+  constructor() {}
 
-  public async ngOnInit() {
-    // Buat instance peta
-    const map = new Map({
-      basemap: "topo-vector"
+  async ngOnInit() {
+    // Buat instance peta dengan basemap default
+    this.map = new Map({
+      basemap: "topo-vector", // Default basemap
     });
 
-    const view = new MapView({
-      container: "container",
-      map: map,
-      zoom: 15,
-      center: [this.longitude, this.latitude]
+    this.mapView = new MapView({
+      container: "container", // ID elemen HTML untuk map
+      map: this.map,
+      zoom: 8,
     });
 
-    // Buat marker di lokasi perpustakaan
-    const point = new Point({
-      longitude: this.longitude,
-      latitude: this.latitude
-    });
+    // Tambahkan imagery layer cuaca (optional)
+    let weatherServiceFL = new ImageryLayer({ url: WeatherServiceURL });
+    this.map.add(weatherServiceFL);
 
-    const markerSymbol = new SimpleMarkerSymbol({
-      style: 'diamond',
-      color: [226, 119, 40],  // Warna marker
-      outline: {
-        color: [255, 255, 255], // Warna outline
-        width: 2
+    // Update lokasi pengguna
+    await this.updateUserLocationOnMap();
+    this.mapView.center = this.userLocationGraphic.geometry as Point;
+
+    // Perbarui lokasi setiap 10 detik
+    setInterval(this.updateUserLocationOnMap.bind(this), 10000);
+
+    // Event listener untuk klik kanan di peta
+    this.mapView.on("click", (event: any) => {
+      if (event.button === 2) { // Klik kanan
+        this.showCoordinatesOnRightClick(event.mapPoint);
       }
     });
+  }
 
-    const pointGraphic = new Graphic({
-      geometry: point,
-      symbol: markerSymbol
+  // Fungsi untuk menangani perubahan basemap dari dropdown
+  onBasemapChange(event: any) {
+    const selectedBasemap = event.target.value;
+    this.map.basemap = selectedBasemap;
+  }
+
+  async getLocationService(): Promise<number[]> {
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition((resp) => {
+        resolve([resp.coords.latitude, resp.coords.longitude]);
+      });
+    });
+  }
+
+  async updateUserLocationOnMap() {
+    let geom = new Point({
+      longitude: -78.24908214885481, // Set koordinat manual
+      latitude: 40.39682132573387,
     });
 
-    // Tambahkan marker ke view
-    view.graphics.add(pointGraphic);
+    if (this.userLocationGraphic) {
+      this.userLocationGraphic.geometry = geom;
+    } else {
+      this.userLocationGraphic = new Graphic({
+        symbol: new SimpleMarkerSymbol(),
+        geometry: geom,
+      });
+      this.mapView.graphics.add(this.userLocationGraphic);
+    }
+  }
 
-    // Dapatkan posisi saat ini (opsional)
-    const position = await Geolocation.getCurrentPosition();
-    this.latitude = position.coords.latitude;
-    this.longitude = position.coords.longitude;
+  // Fungsi untuk menampilkan koordinat pada klik kanan
+  showCoordinatesOnRightClick(mapPoint: Point) {
+    const latitude = mapPoint.latitude;
+    const longitude = mapPoint.longitude;
+    alert(`Koordinat: Latitude: ${latitude}, Longitude: ${longitude}`);
   }
 }
 
-
+const WeatherServiceURL = 'https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity_time/ImageServer';

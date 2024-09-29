@@ -14,4 +14,17 @@
   </ion-header>
 
   <div id="container"></div>
+
+  <!-- Dropdown to change basemap -->
+  <ion-item>
+    <ion-label>Choose Basemap</ion-label>
+    <ion-select (ionChange)="onBasemapChange($event)">
+      <ion-select-option value="topo-vector">Topographic</ion-select-option>
+      <ion-select-option value="streets">Streets</ion-select-option>
+      <ion-select-option value="satellite">Satellite</ion-select-option>
+      <ion-select-option value="hybrid">Hybrid</ion-select-option>
+      <ion-select-option value="dark-gray">Dark Gray</ion-select-option>
+      <ion-select-option value="terrain">Terrain</ion-select-option>
+    </ion-select>
+  </ion-item>
 </ion-content>
